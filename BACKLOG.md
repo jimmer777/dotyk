@@ -24,6 +24,7 @@ Live: https://jimmer777.github.io/dotyk/ · Lokalnie: `python3 -m http.server 84
 - [x] Zwarty układ dla niskich ekranów (≤760 px i ≤640 px wysokości) — sprawdzone 360×620/680, 375×812
 - [ ] Kalibracja progu „głośno” mikrofonu na prawdziwym Samsungu (czeka na liczby od Przema)
 - [x] Kulki: zwykła fizyka w skali ~1:1 (pudełko 6,5 cm, opór toczenia 0,25 m/s², odbicia 0,45/0,8), każde odczuwalne uderzenie wibruje od razu. Przemo: „mają się zachowywać normalnie, zgadywanie to inna sprawa”. Testy: drżenie 0 impulsów, dotoczenie 10° zgodne z fizyką (+14% = opóźnienie filtra), leżąca kulka cicha, gwałtowne potrząsanie bez ucieczek/NaN.
+- [x] Model silniczka LRA zamiast statycznego obrazka: 3 slajdy — (1) przekrój + oscyloskop, przytrzymaj = prąd (60× zwolnione, telefon wibruje), (2) krzywa rezonansu 50–400 Hz (f0 170 Hz, Q 12), (3) klik z hamulcem / bez / ERM. Symulacja x''+2ζω0x'+ω0²x=ω0²u sprawdzona z teorią (τ 22,4 vs 22,5 ms, krzywa ±2%); hamulec: ruch 19 ms vs 68 ms bez.
 - [ ] Nawigacja między grą a prezentacją (link w grze)
 
 ## Feedback z telefonu (Samsung)
