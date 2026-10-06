@@ -18,7 +18,8 @@
   #desc { margin:3px 0 4px; font-size:14px; color:#c9c9c9; min-height:2.7em; }
   .row { display:flex; gap:12px; align-items:center; font-size:12px; color:var(--mut); }
   .row input { flex:1; accent-color:var(--acc); }
-  #test { margin-left:auto; border:0; border-radius:8px; padding:6px 10px; background:#3a3a3a; color:var(--fg); }
+  .tb { border:0; border-radius:8px; padding:6px 10px; background:#3a3a3a; color:var(--fg); }
+  #snd { margin-left:auto; }
   #pad { flex:1; position:relative; touch-action:none; user-select:none; -webkit-user-select:none; }
   #pad canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
   nav { display:flex; gap:6px; overflow-x:auto; padding:8px 12px calc(10px + env(safe-area-inset-bottom)); }
@@ -42,7 +43,7 @@
       <label for="gain">Siła</label><input id="gain" type="range" min="0.5" max="3" step="0.25" value="1">
       <span id="gainv">×1</span>
     </div>
-    <div class="row"><span id="count"></span><span id="warn"></span><button id="test">Test 0,5 s</button></div>
+    <div class="row"><span id="count"></span><span id="warn"></span><button id="snd" class="tb"></button><button id="test" class="tb">Test 0,5 s</button></div>
   </header>
   <div id="pad"><canvas id="base"></canvas><canvas id="fx"></canvas></div>
   <nav id="mats"></nav>
@@ -57,19 +58,19 @@
 // on/off rhythm while sliding, and how long and echoey a tap is (weight from density).
 // Pattern arrays alternate [on, off, on, off, ...] in ms.
 const MATERIALS = [
-  { name:'Sztruks', density:0.4, kind:'lines', step:16, jitter:0, lw:7, pulse:[14], tap:[10],
+  { name:'Sztruks', density:0.4, kind:'lines', step:16, jitter:0, lw:7, pulse:[14], tap:[10], snd:{ f:900, q:1.2, vol:0.35 },
     bg:'#7a5a32', fg:'#5c4223', desc:'Równe, miękkie prążki. W poprzek: równy rytm. Wzdłuż: cisza.' },
-  { name:'Drewno', density:0.6, kind:'lines', step:40, jitter:0.7, lw:3, pulse:[6], knot:[6, 30, 6], tap:[18],
+  { name:'Drewno', density:0.6, kind:'lines', step:40, jitter:0.7, lw:3, pulse:[6], knot:[6, 30, 6], tap:[18], snd:{ f:2200, q:3, vol:0.6 },
     bg:'#b98a52', fg:'#8a5e2f', desc:'Rzadkie, nierówne słoje: suche kliknięcia, czasem sęk (podwójny klik).' },
-  { name:'Piasek', density:1.6, kind:'stream', on:[2, 5], off:[25, 80], tap:[30],
+  { name:'Piasek', density:1.6, kind:'stream', on:[2, 5], off:[25, 80], tap:[30], snd:{ f:3500, q:0.8, vol:0.35 },
     bg:'#d9c08a', fg:'#a88b52', desc:'Sypki chrzęst: losowe drobne trzaski, gęstsze, im szybciej suniesz.' },
-  { name:'Papier ścierny', density:1.2, kind:'stream', on:[4, 7], off:[6, 12], tap:[22],
+  { name:'Papier ścierny', density:1.2, kind:'stream', on:[4, 7], off:[6, 12], tap:[22], snd:{ f:2800, q:0.6, vol:0.4 },
     bg:'#3b3a36', fg:'#8c8a80', desc:'Ostre, gęste ziarno: ciągłe, szorstkie rzężenie.' },
-  { name:'Bruk', density:2.6, kind:'grid', step:84, pulse:[45, 40, 20], tap:[55, 25, 25],
+  { name:'Bruk', density:2.6, kind:'grid', step:84, pulse:[45, 40, 20], tap:[55, 25, 25], snd:{ f:220, q:1.5, vol:0.9 },
     bg:'#2d2d2d', fg:'#7d7a74', desc:'Gładkie kamienie, głębokie fugi: cisza, potem ciężkie „łup” na szczelinie.' },
-  { name:'Stal', density:7.8, kind:'stream', on:[90, 90], off:[0, 0], tap:[80, 30, 40, 30, 20, 30, 10],
+  { name:'Stal', density:7.8, kind:'stream', on:[90, 90], off:[0, 0], tap:[80, 30, 40, 30, 20, 30, 10], snd:{ f:5000, q:0.5, vol:0.12, tone:1400 },
     bg:'#9ea3a8', fg:'#7f858b', desc:'Śliska i bardzo gęsta: równy, ciągły szum pod palcem. Stuk ciężki, z pogłosem.' },
-  { name:'Szkło', density:2.5, kind:'smooth', tap:[8, 40, 6, 40, 4, 40, 3],
+  { name:'Szkło', density:2.5, kind:'smooth', tap:[8, 40, 6, 40, 4, 40, 3], snd:{ f:4000, q:4, vol:0.3, tone:2600 },
     bg:'#1f3540', fg:'#5a8aa0', desc:'Idealnie gładkie: przesuwanie w ciszy. Stuknięcie dzwoni.' },
 ];
 
@@ -92,14 +93,50 @@ const between = ([a, b]) => a + Math.random() * (b - a);
 
 function updateCount() { $('count').textContent = `impulsy: ${pulses} · palce: ${fingers.size}`; }
 
+// Sound in sync with every "on" segment: hearing friction makes the vibration read as texture.
+let ac = null, noise = null, soundOn = true;
+try { soundOn = localStorage.getItem('dotyk.sound') !== 'off'; } catch {}
+
+function initAudio() {
+  if (ac) return;
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  noise = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+  const d = noise.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+}
+
+function sound(p, tap) {
+  if (!ac || !soundOn) return;
+  const s = m.snd;
+  let t = ac.currentTime + 0.005;
+  p.forEach((v, i) => {
+    if (i % 2 === 0 && v > 0) {
+      const dur = Math.max(0.004, v / 1000), end = t + dur + 0.02;
+      const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
+      src.buffer = noise; bp.type = 'bandpass'; bp.frequency.value = s.f; bp.Q.value = s.q;
+      g.gain.setValueAtTime(s.vol, t); g.gain.exponentialRampToValueAtTime(0.001, end);
+      src.connect(bp).connect(g).connect(ac.destination);
+      src.start(t, Math.random() * 0.9, dur + 0.03);
+      if (tap && s.tone) { // hard materials ring after a tap
+        const o = ac.createOscillator(), og = ac.createGain();
+        o.frequency.value = s.tone; og.gain.setValueAtTime(0.15 * s.vol / 0.3, t);
+        og.gain.exponentialRampToValueAtTime(0.001, t + dur * 6 + 0.1);
+        o.connect(og).connect(ac.destination); o.start(t); o.stop(t + dur * 6 + 0.12);
+      }
+    }
+    t += v / 1000;
+  });
+}
+
 // force=true interrupts whatever is playing; otherwise a busy motor drops the pulse.
-function play(pattern, force) {
+function play(pattern, force, tap) {
   const now = performance.now();
   if (!force && now < busyUntil) return false;
   const p = pattern.map((v, i) => i % 2 ? Math.round(v) : Math.max(1, Math.round(v * gain)));
   busyUntil = now + p.reduce((a, b) => a + b, 0);
   if (navigator.vibrate) navigator.vibrate(p);
   else $('iosTap').click(); // iOS 18+ Safari: toggling a switch input gives a haptic tick
+  sound(p, tap);
   pulses++; updateCount();
   return true;
 }
@@ -185,7 +222,7 @@ pad.addEventListener('pointerdown', e => {
   const p = pt(e);
   fingers.set(e.pointerId, { ...p, t: e.timeStamp });
   try { pad.setPointerCapture(e.pointerId); } catch {} // touch is captured implicitly anyway
-  play(m.tap, true); ripple(p, true); updateCount();
+  play(m.tap, true, true); ripple(p, true); updateCount();
 });
 pad.addEventListener('pointermove', e => {
   const f = fingers.get(e.pointerId);
@@ -233,12 +270,15 @@ function select(i) {
 
 MATERIALS.forEach((mat, i) => {
   const b = document.createElement('button'); b.textContent = `${i + 1}. ${mat.name}`;
-  b.onclick = () => { select(i); play(m.tap, true); };
+  b.onclick = () => { select(i); play(m.tap, true, true); };
   $('mats').append(b);
 });
 $('gain').oninput = e => { gain = +e.target.value; $('gainv').textContent = '×' + gain; select(MATERIALS.indexOf(m)); };
 $('test').onclick = () => { $('warn').textContent = 'vibrate → ' + (navigator.vibrate ? navigator.vibrate(500) : 'brak API'); };
-$('start').onclick = () => { $('start').remove(); play([30], true); }; // first tap = user activation for vibrate
+$('start').onclick = () => { $('start').remove(); initAudio(); play([30], true); }; // first tap = user activation for vibrate + audio
+const sndLabel = () => { $('snd').textContent = soundOn ? '🔊' : '🔇'; };
+$('snd').onclick = () => { soundOn = !soundOn; sndLabel(); try { localStorage.setItem('dotyk.sound', soundOn ? 'on' : 'off'); } catch {} };
+sndLabel();
 addEventListener('resize', layout);
 if ('serviceWorker' in navigator && isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
 select(0);
