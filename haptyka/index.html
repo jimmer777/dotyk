@@ -59,6 +59,12 @@
   #topbar svg { width:20px; height:20px; display:block; transition:transform .08s ease-out; }
   #hearttop.beat svg { transform:scale(1.3); }
   #micb.on { color:var(--acc); } #micb.loud { color:#ff8a7a; }
+  .lra { width:100%; height:auto; display:block; }
+  .lra .mass { transform-box:fill-box; }
+  .lra.run .mass { animation:osc 40ms linear 8 alternate; }
+  @keyframes osc { from { transform:translateX(-5px); } to { transform:translateX(5px); } }
+  button.flash { animation:press .18s ease-out; }
+  @keyframes press { 0% { transform:scale(.9); background:#e8c26a; color:#111; } 100% { transform:scale(1); } }
   .box { width:100%; height:150px; border-radius:14px; display:block; touch-action:none; }
   .ios-tap { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
 </style>
@@ -73,9 +79,9 @@
 <main id="deck">
 
 <section class="s">
-  <div class="top"><span>Przegląd · październik 2026 · ~4 min</span></div>
-  <h1>Haptyka: co dziś da się poczuć pod palcem</h1>
-  <p class="lead">Najlepsze przykłady na świecie, źródła i oceny. Przewijaj w górę, przyciski wibrują.</p>
+  <div class="top"><span>Część 1 · czym jest haptyka · ~7 min</span></div>
+  <h1>Twój telefon potrafi dotykać</h1>
+  <p class="lead">W środku jest mały silniczek, który stuka, puka i potrafi bić jak serce. To się nazywa <b>haptyka</b>. Włącz serce i weź telefon w dłoń.</p>
   <div class="why"><b>Warunek:</b> wibracje włączone, telefon nie na <b>Wycisz</b>. <button onclick="vibCheck()" style="padding:6px 10px;margin-left:4px">📳 Sprawdź</button></div>
   <div class="heart">
     <div id="hrt" class="hrt">❤️</div>
@@ -87,18 +93,97 @@
 </section>
 
 <section class="s">
-  <h2>Jak czytać oceny</h2>
+  <div class="top"><span>Podstawy</span></div>
+  <h2>Haptyka = rozmowa przez dotyk</h2>
+  <p class="lead">Słowo pochodzi z greckiego <i>haptikos</i> — „dotykowy”. Haptyka to wszystko, co urządzenie mówi Ci przez skórę: drgnięcie, stuknięcie, opór.</p>
+  <p class="lead">Znasz ją, tylko nie wiesz, jak się nazywa:</p>
+  <div class="demo">
+    <button data-p="400,200,400,200,400">📞 Połączenie w kieszeni</button>
+    <button data-p="12">⌨️ Klawisz</button>
+    <button data-p="30">👆 Przytrzymanie ikony</button>
+  </div>
+  <div class="why"><b>Ciekawostka:</b> dobra haptyka jest niewidzialna. Czujesz ją codziennie, ale zauważasz dopiero, gdy jej zabraknie.</div>
+  <p class="muted">Trzy rodzaje: <b>wibracja</b> (trzęsie urządzeniem) · <b>tarcie</b> (ekran zmienia śliskość) · <b>siła</b> (opór spustu, rękawicy).</p>
+</section>
+
+<section class="s">
+  <div class="top"><span>Podstawy</span></div>
+  <h2>Co jest w środku?</h2>
+  <p class="lead">Silniczek wielkości monety: <b>ciężarek z magnesem na sprężynkach</b>. Prąd w cewce szarpie nim tam i z powrotem setki razy na sekundę — drży cały telefon. Fachowo: <b>LRA</b>; w iPhonie to Taptic Engine.</p>
+  <svg class="lra" id="lra" viewBox="0 0 300 92" role="img" aria-label="Schemat silniczka LRA: ciężarek z magnesem między dwiema sprężynkami">
+    <rect x="4" y="12" width="292" height="62" rx="31" fill="#24242c" stroke="#4a4a55" stroke-width="2"/>
+    <path d="M22 43 l8 -12 l10 24 l10 -24 l10 24 l10 -24 l8 12" fill="none" stroke="#a3a3a8" stroke-width="3"/>
+    <path d="M222 43 l8 -12 l10 24 l10 -24 l10 24 l10 -24 l8 12" fill="none" stroke="#a3a3a8" stroke-width="3"/>
+    <g class="mass"><rect x="88" y="25" width="124" height="36" rx="8" fill="#e8c26a"/>
+      <text x="150" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#111">ciężarek + magnes</text></g>
+    <text x="150" y="88" text-anchor="middle" font-size="11" fill="#a3a3a8">↔ drga w poziomie · sprężynki go wracają</text>
+  </svg>
+  <p class="muted">Tańsze i starsze telefony mają <b>ERM</b>: silniczek z niewyważonym ciężarkiem, jak pralka na wirowaniu. Rozpędza się wolno, więc zamiast kliku daje brzęczenie.</p>
+  <div class="demo">
+    <button data-p="12" data-lra>🆕 LRA: czysty klik</button>
+    <button data-p="260">🌀 ERM: brzęczenie (naśladowane)</button>
+  </div>
+  <p class="src">Gdzie: <a href="https://developer.android.com/develop/ui/views/haptics/actuators" target="_blank" rel="noopener">Android — silniczki (LRA) ↗</a> · <a href="https://en.wikipedia.org/wiki/Haptic_technology" target="_blank" rel="noopener">Wikipedia — Haptic technology ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span>Podstawy</span></div>
+  <h2>Po co telefonowi silniczek?</h2>
+  <ul>
+    <li>🤫 <b>Cicha wiadomość</b> — połączenie w kieszeni, na spotkaniu, w kinie.</li>
+    <li>🔘 <b>Szkło udaje przycisk</b> — ekran się nie wciska, więc klik 10–20 ms mówi „przyjąłem dotyk”. Przy klawiaturze piszesz szybciej i z mniejszą liczbą błędów.</li>
+    <li>♿ <b>Dostępność</b> — osoby niewidome i niesłyszące dostają informację przez skórę.</li>
+    <li>🎮 <b>Emocje</b> — gry, muzyka, bicie serca.</li>
+  </ul>
+  <div class="demo"><button class="big" id="glass">👇 Naciśnij szkło i puść — poczuj „przycisk”</button></div>
+  <p class="src">Gdzie: <a href="https://developer.android.com/develop/ui/views/haptics/actuators" target="_blank" rel="noopener">Android Developers — klik 10–20 ms, klawiatura ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span>Podstawy · psychologia</span></div>
+  <h2>Jak to czujesz?</h2>
+  <p class="lead">W skórze palców są czujniki drgań — <b>ciałka Paciniego</b>. Najczulsze są na ok. <b>250 drgań na sekundę</b>. Dlatego silniczki w telefonach drgają w zakresie 150–300 Hz.</p>
+  <p class="lead">Resztę dopowiada <b>mózg</b>: skleja dotyk, dźwięk i obraz w jedno wrażenie. Sprawdź ten sam impuls trzy razy:</p>
+  <div class="demo">
+    <button data-ms="1">1. Sam dotyk</button>
+    <button data-ms="2">2. + dźwięk</button>
+    <button data-ms="3">3. + dźwięk + obraz</button>
+  </div>
+  <div class="why"><b>Dlatego</b> klik w MacBooku działa, choć gładzik się nie rusza: mózg wierzy zgranym zmysłom.</div>
+  <p class="src">Gdzie: <a href="https://en.wikipedia.org/wiki/Lamellar_corpuscle" target="_blank" rel="noopener">Wikipedia — ciałka Paciniego (250 Hz) ↗</a> · <a href="https://developer.android.com/develop/ui/views/haptics/actuators" target="_blank" rel="noopener">Android — 200–300 Hz ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span>Podstawy · gra</span></div>
+  <h2>Haptyka ma swój język</h2>
+  <p class="lead">Aplikacje powtarzają te same wzory, żebyś nie musiał patrzeć na ekran. Najpierw poczuj każdy przycisk, potem zagraj.</p>
+  <div class="demo" id="qopts"></div>
+  <div class="demo"><button class="pri" id="qplay">▶ Zagraj tajny sygnał</button></div>
+  <p class="res" id="qres">Stuknij przycisk, żeby poznać sygnał.</p>
+  <div class="why"><b>Dlaczego ważne:</b> spójny język = wiesz, co się stało, z telefonem w kieszeni.</div>
+</section>
+
+<section class="s">
+  <div class="top"><span>Podstawy · Twój telefon</span></div>
+  <h2>Gdzie to jest w Twoim telefonie?</h2>
+  <ul>
+    <li>Ustawienia → <b>Dźwięki i wibracje</b> → <b>Intensywność wibracji</b>: siła dla połączeń, powiadomień i dotyku.</li>
+    <li>W tym samym menu: <b>wibracje systemu</b> — klawiatura, dotyk, ładowanie, gesty.</li>
+    <li>Tryb <b>Wycisz</b> wyłącza wibracje stron internetowych — dlatego na starcie pytaliśmy.</li>
+  </ul>
+  <div class="demo"><button onclick="vibCheck()">📳 Sprawdź wibrację</button></div>
+  <div class="demo"><button class="big" onclick="this.closest('.s').nextElementSibling.scrollIntoView({behavior:'smooth'})">Dalej: najlepsi na świecie ↓</button></div>
+</section>
+
+<section class="s">
+  <div class="top"><span>Część 2 · najlepsi na świecie</span></div>
+  <h2>Co dziś da się poczuć pod palcem</h2>
+  <p class="lead">Najlepsze przykłady na świecie. Każdy ma ocenę, dokładne źródło i — jeśli się da — demo do poczucia.</p>
   <table>
     <tr><td><span class="chip nov">NOWATORSKIE</span></td><td>robi coś, czego wcześniej nie było; wyznacza kierunek</td></tr>
     <tr><td><span class="chip ok">AKCEPTOWALNE</span></td><td>dojrzały standard, tak <i>powinno</i> się robić</td></tr>
     <tr><td><span class="chip meh">TUZINKOWE</span></td><td>wszyscy to mają albo jest technicznie ubogie</td></tr>
   </table>
-  <p class="lead">Trzy rodzaje haptyki:</p>
-  <ul>
-    <li><b>wibracja</b> — silniczek trzęsie całym urządzeniem (telefon, pad)</li>
-    <li><b>tarcie powierzchni</b> — ekran zmienia śliskość pod palcem</li>
-    <li><b>siła</b> — opór spustu, rękawicy, kształtu</li>
-  </ul>
 </section>
 
 <section class="s">
@@ -250,6 +335,9 @@
 <section class="s">
   <h2>Źródła</h2>
   <ul class="srcs">
+    <li><a href="https://en.wikipedia.org/wiki/Haptic_technology">Wikipedia — Haptic technology</a> · <i>haptikos</i>, silniczki ERM i LRA</li>
+    <li><a href="https://developer.android.com/develop/ui/views/haptics/actuators">Android — silniczki (actuators)</a> · LRA, klik 10–20 ms, 200–300 Hz, klawiatura</li>
+    <li><a href="https://en.wikipedia.org/wiki/Lamellar_corpuscle">Wikipedia — ciałka Paciniego</a> · najczulsze na 250 Hz</li>
     <li><a href="https://developer.apple.com/documentation/corehaptics">Apple — Core Haptics</a> · intensywność, ostrość, AHAP</li>
     <li><a href="https://developer.apple.com/design/human-interface-guidelines/playing-haptics">Apple HIG — Playing haptics</a> · zasady projektowania</li>
     <li><a href="https://techcrunch.com/2015/03/12/look-inside-the-new-retina-macbook-pros-force-touch-trackpad-and-taptic-engine/">TechCrunch 2015 — Force Touch trackpad</a> · klik symulowany przez Taptic Engine</li>
@@ -311,6 +399,47 @@ picker.addEventListener('scroll', () => {
 const fc = $('fakeclick');
 fc.addEventListener('pointerdown', () => buzz(14));
 fc.addEventListener('pointerup', () => buzz(7));
+
+// Intro demos. LRA picture shakes with the click; the glass "button" clicks on press and on release.
+document.querySelectorAll('[data-lra]').forEach(b => b.addEventListener('click', () => {
+  $('lra').classList.remove('run'); void $('lra').getBoundingClientRect(); $('lra').classList.add('run');
+}));
+$('glass').addEventListener('pointerdown', () => buzz(14));
+$('glass').addEventListener('pointerup', () => buzz(7));
+
+// Multisensory: the same 12 ms pulse alone, with a click sound, then with sound and a visual press.
+let actx = null;
+function clickSound() {
+  actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+  const len = 0.012, buf = actx.createBuffer(1, Math.round(actx.sampleRate * len), actx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 3;
+  const src = actx.createBufferSource(), g = actx.createGain();
+  g.gain.value = 0.9; src.buffer = buf; src.connect(g).connect(actx.destination); src.start();
+}
+document.querySelectorAll('[data-ms]').forEach(b => b.addEventListener('click', () => {
+  const lvl = +b.dataset.ms;
+  buzz(12);
+  if (lvl >= 2) clickSound();
+  if (lvl >= 3) { b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash'); }
+}));
+
+// Haptic language quiz: buttons teach a signal until a secret one is playing, then they answer.
+const SIGNALS = { '✅ Sukces': [15, 60, 25], '❌ Błąd': [30, 40, 30, 40, 30], '🔔 Powiadomienie': [150, 150, 150], '💓 Serce': [45, 110, 30, 600, 45, 110, 30] };
+let quiz = null, qScore = 0, qTotal = 0;
+for (const name of Object.keys(SIGNALS)) {
+  const b = document.createElement('button'); b.textContent = name;
+  b.onclick = () => {
+    if (!quiz) { buzz(SIGNALS[name]); $('qres').textContent = `To jest: ${name}`; return; }
+    qTotal++; if (name === quiz) qScore++;
+    $('qres').textContent = (name === quiz ? '✅ Dobrze! ' : `❌ To było: ${quiz}. `) + `Wynik ${qScore}/${qTotal}`;
+    quiz = null; $('qplay').textContent = '▶ Kolejny tajny sygnał';
+  };
+  $('qopts').append(b);
+}
+$('qplay').onclick = () => {
+  if (!quiz) { const k = Object.keys(SIGNALS); quiz = k[Math.floor(Math.random() * k.length)]; }
+  buzz(SIGNALS[quiz]); $('qres').textContent = 'Co to było? Wybierz odpowiedź.'; $('qplay').textContent = '↻ Zagraj jeszcze raz';
+};
 
 // Ball Count: N balls roll in a closed box driven by the motion sensor (tilt + shake). Wall hits buzz,
 // harder hits buzz longer, so you count them by feel. No sensor (desktop)? Drag the box with a finger.
