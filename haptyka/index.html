@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0f">
+<title>Haptyka — przegląd</title>
+<style>
+  :root { --bg:#0d0d0f; --fg:#f2f2f2; --mut:#a3a3a8; --card:#1a1a1f; --line:#2a2a31;
+    --nov:#7cf29a; --ok:#8ab4ff; --meh:#c2c2c2; --acc:#e8c26a; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:var(--bg); color:var(--fg);
+    font:17px/1.42 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { height:100dvh; overflow-y:auto; scroll-snap-type:y proximity; overscroll-behavior:none; }
+  .s { min-height:100dvh; scroll-snap-align:start; padding:calc(28px + env(safe-area-inset-top)) 18px 28px;
+    display:flex; flex-direction:column; justify-content:center; gap:12px; border-bottom:1px solid var(--line); }
+  h1 { font-size:34px; line-height:1.1; margin:0; letter-spacing:-.5px; }
+  h2 { font-size:25px; line-height:1.15; margin:0; letter-spacing:-.3px; }
+  p { margin:0; }
+  .lead { color:#d9d9de; }
+  .top { display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px; color:var(--mut); }
+  .chip { font-size:11px; font-weight:700; letter-spacing:.8px; padding:4px 8px; border-radius:999px; }
+  .nov { background:rgba(124,242,154,.14); color:var(--nov); }
+  .ok  { background:rgba(138,180,255,.14); color:var(--ok); }
+  .meh { background:rgba(194,194,194,.12); color:var(--meh); }
+  .why { background:var(--card); border-left:3px solid var(--acc); padding:10px 12px; border-radius:8px; font-size:15px; }
+  .why b { color:var(--acc); }
+  ul, ol { margin:0; padding-left:20px; } li { margin:3px 0; }
+  .demo { display:flex; flex-wrap:wrap; gap:8px; }
+  button { font:inherit; font-size:15px; border:0; border-radius:12px; padding:12px 14px; background:#2b2b33; color:var(--fg);
+    -webkit-tap-highlight-color:transparent; }
+  button:active { transform:scale(.96); background:#3a3a45; }
+  button.big { flex:1 1 100%; padding:22px; font-size:17px; background:#24242c; border:1px dashed #4a4a55; }
+  .src { font-size:13px; color:var(--ok); word-break:break-all; }
+  .src a { color:inherit; }
+  .muted { color:var(--mut); font-size:14px; }
+  #bar { position:fixed; top:0; left:0; height:3px; background:var(--acc); width:0; z-index:3; transition:width .2s; }
+  #num { position:fixed; right:12px; top:calc(8px + env(safe-area-inset-top)); font-size:12px; color:var(--mut); z-index:3; }
+  .picker { display:flex; gap:0; overflow-x:auto; scroll-snap-type:x mandatory; background:var(--card); border-radius:12px;
+    padding:14px calc(50% - 26px); scrollbar-width:none; }
+  .picker::-webkit-scrollbar { display:none; }
+  .picker span { flex:0 0 52px; text-align:center; font-size:24px; scroll-snap-align:center; color:var(--mut); }
+  .picker span.on { color:var(--fg); font-weight:700; }
+  .res { min-height:1.4em; font-size:15px; }
+  table { border-collapse:collapse; font-size:14px; width:100%; }
+  td { padding:6px 4px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .srcs li { font-size:13px; margin:6px 0; word-break:break-word; }
+  .srcs a { color:var(--ok); }
+  .ios-tap { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
+</style>
+</head>
+<body>
+<div id="bar"></div><div id="num"></div>
+<label class="ios-tap" id="iosTap"><input type="checkbox" switch></label>
+<main id="deck">
+
+<section class="s">
+  <div class="top"><span>Przegląd · październik 2026 · ~4 min</span></div>
+  <h1>Haptyka: co dziś da się poczuć pod palcem</h1>
+  <p class="lead">Najlepsze przykłady na świecie, gdzie je znaleźć i jak je ocenić. Przewijaj w górę. Przyciski <b>„Poczuj”</b> wibrują.</p>
+  <div class="why"><b>Warunek:</b> telefon nie może być na <b>Wycisz</b> — Chrome na Androidzie wtedy w ogóle nie wibruje.</div>
+  <div class="demo"><button class="big" data-p="40,120,60">💓 Poczuj: bicie serca</button></div>
+</section>
+
+<section class="s">
+  <h2>Jak czytać oceny</h2>
+  <table>
+    <tr><td><span class="chip nov">NOWATORSKIE</span></td><td>robi coś, czego wcześniej nie było; wyznacza kierunek</td></tr>
+    <tr><td><span class="chip ok">AKCEPTOWALNE</span></td><td>dojrzały standard, tak <i>powinno</i> się robić</td></tr>
+    <tr><td><span class="chip meh">TUZINKOWE</span></td><td>wszyscy to mają albo jest technicznie ubogie</td></tr>
+  </table>
+  <p class="lead">Trzy rodzaje haptyki:</p>
+  <ul>
+    <li><b>wibracja</b> — silniczek trzęsie całym urządzeniem (telefon, pad)</li>
+    <li><b>tarcie powierzchni</b> — ekran zmienia śliskość pod palcem</li>
+    <li><b>siła</b> — opór spustu, rękawicy, kształtu</li>
+  </ul>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip ok">AKCEPTOWALNE · wzorzec</span><span>Apple · iPhone · Core Haptics od iOS 13</span></div>
+  <h2>iPhone: Taptic Engine + Core Haptics</h2>
+  <p class="lead">Programista ustawia w czasie <b>intensywność</b> i <b>ostrość</b> wibracji, synchronizuje ją z dźwiękiem, a wzorce zapisuje w plikach AHAP. Przewiń kółko poniżej, tak „klika” wybór na iPhonie.</p>
+  <div class="picker" id="picker"></div>
+  <div class="why"><b>Dlaczego ważne:</b> to punkt odniesienia — krótkie, ostre kliki zamiast brzęczenia. Każdy porównuje się do iPhone'a.</div>
+  <p class="src">Gdzie: <a href="https://developer.apple.com/documentation/corehaptics" target="_blank" rel="noopener">developer.apple.com/documentation/corehaptics ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip ok">AKCEPTOWALNE</span><span>Apple · MacBook · od 2015</span></div>
+  <h2>Klik, którego nie ma</h2>
+  <p class="lead">Gładzik Force Touch w MacBookach <b>w ogóle się nie rusza</b>. Nacisk mierzą czujniki, a „klik” to impuls Taptic Engine. Mózg nie zauważa różnicy. W 2015 rewolucja, dziś norma.</p>
+  <div class="demo"><button class="big" id="fakeclick">👇 Naciśnij i puść — dwa „kliki”: wciśnięcie i puszczenie</button></div>
+  <div class="why"><b>Dlaczego ważne:</b> dowód, że haptyka zsynchronizowana z ruchem palca potrafi <i>zastąpić</i> mechanikę.</div>
+  <p class="src">Gdzie: <a href="https://techcrunch.com/2015/03/12/look-inside-the-new-retina-macbook-pros-force-touch-trackpad-and-taptic-engine/" target="_blank" rel="noopener">TechCrunch, 12.03.2015 — rozbiórka gładzika ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip ok">AKCEPTOWALNE</span><span class="chip nov">Android 16: NOWATORSKIE</span><span>Google</span></div>
+  <h2>Android: czyste, bogate, brzęczące</h2>
+  <p class="lead">Google dzieli haptykę na <b>clear</b> (czystą), <b>rich</b> (bogatą) i <b>buzzy</b> (brzęczącą — najgorszą). Android 11 dał gotowe efekty (klik, tyk, łup). <b>Android 16</b> pozwala rysować krzywe siły i częstotliwości.</p>
+  <div class="demo">
+    <button data-p="10">✅ Czysta (10 ms)</button>
+    <button data-p="380">❌ Brzęcząca (380 ms)</button>
+  </div>
+  <div class="why"><b>Dlaczego ważne:</b> przeglądarka umie tylko „brzęczącą” wł./wył. Pełna paleta jest dostępna dopiero w natywnej aplikacji.</div>
+  <p class="src">Gdzie: <a href="https://developer.android.com/develop/ui/views/haptics/haptics-principles" target="_blank" rel="noopener">developer.android.com/…/haptics-principles ↗</a> · <a href="https://developer.android.com/about/versions/16/features" target="_blank" rel="noopener">Android 16 „Richer haptics” ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip nov">NOWATORSKIE</span><span>Apple · iOS 18 · 2024</span></div>
+  <h2>Music Haptics: muzyka dla osób, które nie słyszą</h2>
+  <p class="lead">Taptic Engine gra muzykę uderzeniami, teksturami i wibracjami w rytm utworu. Działa w Apple Music, a inne aplikacje mogą to wywołać przez API.</p>
+  <div class="demo"><button class="big" data-p="45,205,15,235,45,80,45,80,15,235,45,205,15,235,45,80,45,80,15,235">🥁 Poczuj: stopa-werbel, 2 takty</button></div>
+  <div class="why"><b>Dlaczego ważne:</b> haptyka przestaje być powiadomieniem i staje się <i>treścią</i>, a do tego dostępnością.</div>
+  <p class="src">Gdzie: <a href="https://www.apple.com/newsroom/2024/05/apple-announces-new-accessibility-features-including-eye-tracking/" target="_blank" rel="noopener">Apple Newsroom, 15.05.2024 ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip nov">NOWATORSKIE · światowy szczyt</span><span>Sony · PS5 DualSense</span></div>
+  <h2>Astro Bot: czujesz, po czym chodzisz</h2>
+  <p class="lead">Pad DualSense ma precyzyjne siłowniki i spusty z oporem. W <b>Astro's Playroom</b> recenzenci czuli deszcz przechodzący w grad, piasek, lód i stukot metalowych nóżek, a głośnik w padzie gra dźwięk zsynchronizowany z wibracją. <b>Astro Bot</b> zdobył tytuł Gry Roku na The Game Awards 2024.</p>
+  <div class="demo">
+    <button data-demo="rain">🌧️ Deszcz → grad</button>
+    <button data-demo="sand">🏖️ Piasek</button>
+    <button data-demo="ice">🧊 Lód</button>
+    <button data-demo="metal">🤖 Metal</button>
+  </div>
+  <div class="why"><b>Dlaczego ważne:</b> dokładnie to, co robimy w „Dotyku” — podłoże rozpoznawalne po wibracji i dźwięku. Tak to powinno wyglądać.</div>
+  <p class="src">Gdzie: <a href="https://www.videogameschronicle.com/reviews/astros-playroom-ps5/" target="_blank" rel="noopener">recenzja VGC ↗</a> · <a href="https://www.videogameschronicle.com/news/astro-bot-wins-game-of-the-year-at-the-game-awards/" target="_blank" rel="noopener">GOTY 2024 ↗</a> · <a href="https://www.playstation.com/en-us/games/astro-bot/" target="_blank" rel="noopener">playstation.com ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip nov">NOWATORSKIE w 2017 · dziś klasyk</span><span>Nintendo · Switch · HD Rumble</span></div>
+  <h2>Ile kulek jest w pudełku?</h2>
+  <p class="lead">Minigra „Ball Count” z 1-2-Switch: przechylasz Joy-Cona i liczysz kulki, które czujesz w środku. Spróbuj tutaj (nasz telefon jest dużo prostszy):</p>
+  <div class="demo"><button class="big" id="shake">📦 Potrząśnij pudełkiem</button></div>
+  <div class="demo" id="guess"></div>
+  <p class="res" id="ballres"></p>
+  <div class="why"><b>Dlaczego ważne:</b> pokazuje, że z samej wibracji da się <i>policzyć obiekty</i>. To gra oparta wyłącznie na dotyku.</div>
+  <p class="src">Gdzie: <a href="https://www.nintendo.com/us/store/products/1-2-switch-switch/" target="_blank" rel="noopener">nintendo.com — 1-2-Switch ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip ok">AKCEPTOWALNE · narzędzia zawodowców</span><span>Meta · Razer</span></div>
+  <h2>Haptykę się projektuje jak dźwięk</h2>
+  <ul>
+    <li><b>Meta Haptics Studio</b>: wrzucasz plik audio, program sam wylicza z niego haptykę, potem poprawiasz ją „piórem”. SDK dla Unity i Unreal.</li>
+    <li><b>Interhaptics</b> (dziś pod marką WYVRN): edytor efektów na wiele urządzeń.</li>
+  </ul>
+  <div class="why"><b>Dlaczego ważne:</b> zawodowcy nie piszą wzorców ręcznie. Projektują je na osi czasu i zaczynają od dźwięku.</div>
+  <p class="src">Gdzie: <a href="https://developers.meta.com/horizon/resources/haptics-studio/" target="_blank" rel="noopener">developers.meta.com/…/haptics-studio ↗</a> · <a href="https://www.interhaptics.com/" target="_blank" rel="noopener">interhaptics.com ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip meh">TUZINKOWE · web jest w tyle</span><span>przeglądarki</span></div>
+  <h2>Haptyka w aplikacjach webowych</h2>
+  <ul>
+    <li><b>Vibration API</b>: tylko Android, tylko wł./wył. na N ms. Safari na iPhonie go nie ma.</li>
+    <li><b>Trik na iPhone</b>: przełącznik <code>&lt;input switch&gt;</code> w Safari daje tyk (biblioteka ios-haptics).</li>
+    <li><b>Telegram Mini Apps</b>: strony w Telegramie dostają natywną haptykę (impact, notification, selection).</li>
+    <li><b>Capacitor</b>: opakowuje stronę w aplikację i daje dostęp do natywnej haptyki.</li>
+  </ul>
+  <div class="demo"><button data-p="200">To całe Vibration API: wł. 200 ms</button></div>
+  <div class="why"><b>Dlaczego ważne:</b> najlepsze „webowe” haptyki to strony opakowane w natywną aplikację. Sama przeglądarka ma sufit.</div>
+  <p class="src">Gdzie: <a href="https://caniuse.com/vibration" target="_blank" rel="noopener">caniuse.com/vibration ↗</a> · <a href="https://github.com/tijnjh/ios-haptics" target="_blank" rel="noopener">github.com/tijnjh/ios-haptics ↗</a> · <a href="https://core.telegram.org/bots/webapps" target="_blank" rel="noopener">core.telegram.org/bots/webapps ↗</a> · <a href="https://capacitorjs.com/docs/apis/haptics" target="_blank" rel="noopener">capacitorjs.com ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip nov">NOWATORSKIE · poza telefonami</span><span>Disney Research 2010 → Tanvas</span></div>
+  <h2>Prawdziwa faktura: ekran zmienia tarcie</h2>
+  <p class="lead"><b>TeslaTouch</b> (Disney Research, 2010): napięcie pod szybą przyciąga skórę palca, więc szkło robi się „chropowate” albo „lepkie”. Nic się nie rusza. <b>TanvasTouch</b> robi to komercyjnie: tarcie sterowane punkt po punkcie, na ekranach w autach i przemyśle.</p>
+  <div class="why"><b>Dlaczego ważne:</b> to jest pełna odpowiedź na Twoje pierwsze pytanie — faktura pod palcem, a nie trzęsienie całym telefonem. W telefonach jeszcze jej nie ma.</div>
+  <p class="src">Gdzie: <a href="https://la.disneyresearch.com/wp-content/uploads/teslatouchuist20101.pdf" target="_blank" rel="noopener">TeslaTouch, UIST 2010 (PDF) ↗</a> · <a href="https://tanvas.co/technology" target="_blank" rel="noopener">tanvas.co/technology ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip nov">NOWATORSKIE · nauka</span><span>UPenn · IEEE Haptics 2014</span></div>
+  <h2>Faktury nagrane z prawdziwych materiałów</h2>
+  <p class="lead"><b>Penn Haptic Texture Toolkit</b>: naukowcy przesuwali czujnikiem po 100 materiałach i nagrali drgania. Powstały modele, zdjęcia i kod do odtwarzania. Autorzy: Culbertson, López Delgado, Kuchenbecker.</p>
+  <div class="why"><b>Dlaczego ważne:</b> faktura z danych zamiast zgadywania parametrów. Następny poziom dla „Dotyku”: nagrać materiał, a nie go wymyślać.</div>
+  <p class="src">Gdzie: <a href="https://grasp.upenn.edu/projects/the-penn-haptic-texture-toolkit" target="_blank" rel="noopener">grasp.upenn.edu — HaTT ↗</a></p>
+</section>
+
+<section class="s">
+  <div class="top"><span class="chip nov">NOWATORSKIE · nisza</span><span>ręce, ciało, kształt</span></div>
+  <h2>Gdy wibracja to za mało</h2>
+  <ul>
+    <li><b>HaptX</b> — rękawice z mikroprzepływowymi siłownikami pod opuszkami i oporem palców (VR, przemysł).</li>
+    <li><b>bHaptics TactSuit</b> — kamizelka z wieloma silniczkami, czujesz trafienia w grach VR.</li>
+    <li><b>MIT inFORM</b> (2013) — stół z ruchomych pinów, który zmienia kształt.</li>
+  </ul>
+  <div class="why"><b>Dlaczego ważne:</b> pokazuje, dokąd to zmierza — dotyk całym ciałem. Drogie i niszowe, ale wyznacza kierunek.</div>
+  <p class="src">Gdzie: <a href="https://haptx.com/" target="_blank" rel="noopener">haptx.com ↗</a> · <a href="https://www.bhaptics.com/" target="_blank" rel="noopener">bhaptics.com ↗</a> · <a href="https://tangible.media.mit.edu/project/inform/" target="_blank" rel="noopener">tangible.media.mit.edu/…/inform ↗</a></p>
+</section>
+
+<section class="s">
+  <h2>Jak to powinno wyglądać: 6 zasad</h2>
+  <ol>
+    <li><b>Krótko i ostro</b> — czysty klik, nie brzęczenie.</li>
+    <li><b>Razem z obrazem i dźwiękiem</b> — w tej samej milisekundzie.</li>
+    <li><b>Rzadko</b> — wibracja musi coś znaczyć.</li>
+    <li><b>Spójnie</b> — ten sam wzór = ta sama akcja.</li>
+    <li><b>Z wyłącznikiem</b> — użytkownik decyduje.</li>
+    <li><b>Jako treść</b>, nie tylko alarm (Astro Bot, Music Haptics).</li>
+  </ol>
+  <div class="demo">
+    <button data-p="8">👍 Dobrze: tyk</button>
+    <button data-p="300,100,300,100,300">👎 Źle: alarm</button>
+  </div>
+  <p class="src">Gdzie: <a href="https://developer.apple.com/design/human-interface-guidelines/playing-haptics" target="_blank" rel="noopener">Apple HIG — Playing haptics ↗</a> · <a href="https://developer.android.com/develop/ui/views/haptics/haptics-principles" target="_blank" rel="noopener">Android — Haptics design principles ↗</a></p>
+</section>
+
+<section class="s">
+  <h2>Co z tego dla gry „Dotyk”</h2>
+  <ol>
+    <li><b>Natywna aplikacja przez Capacitor</b> — siła i gotowe efekty Androida zamiast samego wł./wył.</li>
+    <li><b>Podłoża jak w Astro</b> — wibracja + dźwięk w tej samej chwili (już zaczęte).</li>
+    <li><b>Faktury z danych</b> jak w HaTT, zamiast ręcznie strojonych liczb.</li>
+    <li><b>Cel gry</b> jak w Ball Count: zgadnij materiał dotykiem.</li>
+  </ol>
+  <div class="demo"><button class="big" onclick="location.href='../'">🎮 Otwórz grę „Dotyk”</button></div>
+</section>
+
+<section class="s">
+  <h2>Źródła</h2>
+  <ul class="srcs">
+    <li><a href="https://developer.apple.com/documentation/corehaptics">Apple — Core Haptics</a> · intensywność, ostrość, AHAP</li>
+    <li><a href="https://developer.apple.com/design/human-interface-guidelines/playing-haptics">Apple HIG — Playing haptics</a> · zasady projektowania</li>
+    <li><a href="https://techcrunch.com/2015/03/12/look-inside-the-new-retina-macbook-pros-force-touch-trackpad-and-taptic-engine/">TechCrunch 2015 — Force Touch trackpad</a> · klik symulowany przez Taptic Engine</li>
+    <li><a href="https://developer.android.com/develop/ui/views/haptics/haptics-principles">Android — Haptics design principles</a> · clear / rich / buzzy</li>
+    <li><a href="https://developer.android.com/reference/android/os/VibrationEffect.Composition">Android — VibrationEffect.Composition</a> · gotowe efekty (Android 11+)</li>
+    <li><a href="https://developer.android.com/about/versions/16/features">Android 16 — Richer haptics</a> · krzywe amplitudy i częstotliwości</li>
+    <li><a href="https://www.apple.com/newsroom/2024/05/apple-announces-new-accessibility-features-including-eye-tracking/">Apple Newsroom 15.05.2024 — Music Haptics</a></li>
+    <li><a href="https://www.videogameschronicle.com/reviews/astros-playroom-ps5/">VGC — recenzja Astro's Playroom</a> · deszcz, piasek, lód, metal</li>
+    <li><a href="https://www.videogameschronicle.com/news/astro-bot-wins-game-of-the-year-at-the-game-awards/">VGC — Astro Bot Grą Roku TGA 2024</a></li>
+    <li><a href="https://www.nintendo.com/us/store/products/1-2-switch-switch/">Nintendo — 1-2-Switch</a> · HD Rumble, Ball Count</li>
+    <li><a href="https://developers.meta.com/horizon/resources/haptics-studio/">Meta Haptics Studio</a> · haptyka z pliku audio</li>
+    <li><a href="https://www.interhaptics.com/">Interhaptics / WYVRN</a></li>
+    <li><a href="https://caniuse.com/vibration">caniuse — Vibration API</a> · brak w Safari</li>
+    <li><a href="https://github.com/tijnjh/ios-haptics">ios-haptics</a> · trik z przełącznikiem w Safari</li>
+    <li><a href="https://core.telegram.org/bots/webapps">Telegram Mini Apps — HapticFeedback</a></li>
+    <li><a href="https://capacitorjs.com/docs/apis/haptics">Capacitor — Haptics</a></li>
+    <li><a href="https://la.disneyresearch.com/wp-content/uploads/teslatouchuist20101.pdf">Bau i in., TeslaTouch, UIST 2010</a> · elektrowibracja</li>
+    <li><a href="https://tanvas.co/technology">Tanvas — technologia</a> · elektroadhezja</li>
+    <li><a href="https://grasp.upenn.edu/projects/the-penn-haptic-texture-toolkit">Penn Haptic Texture Toolkit (2014)</a> · 100 nagranych faktur</li>
+    <li><a href="https://haptx.com/">HaptX</a> · <a href="https://www.bhaptics.com/">bHaptics</a> · <a href="https://tangible.media.mit.edu/project/inform/">MIT inFORM</a></li>
+    <li><a href="https://github.com/chromium/chromium/blob/main/services/device/vibration/android/java/src/org/chromium/device/vibration/VibrationManagerAndroid.java">Chromium — VibrationManagerAndroid</a> · brak wibracji w trybie Wycisz</li>
+  </ul>
+  <p class="muted">Linki sprawdzone 6.10.2026.</p>
+</section>
+
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const buzz = p => { if (navigator.vibrate) navigator.vibrate(p); else $('iosTap').click(); };
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+// Simple demos: data-p="on,off,on,..."
+document.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => buzz(b.dataset.p.split(',').map(Number))));
+
+// Surfaces as Astro's Playroom reviewers describe them, squeezed into on/off timing.
+const surfaces = {
+  rain() { const p = []; for (let t = 0; t < 2600;) { const k = t / 2600, on = Math.round(3 + k * 12), off = Math.round(rnd(60, 220) * (1 - k * 0.8)); p.push(on, off); t += on + off; } return p; },
+  sand() { const p = []; for (let t = 0; t < 1600;) { const on = Math.round(rnd(2, 5)), off = Math.round(rnd(8, 35)); p.push(on, off); t += on + off; } return p; },
+  ice() { return [900]; },
+  metal() { return [12, 140, 12, 140, 12, 140, 12, 140, 12, 140, 12]; },
+};
+document.querySelectorAll('[data-demo]').forEach(b => b.addEventListener('click', () => buzz(surfaces[b.dataset.demo]())));
+
+// iOS-style picker: one crisp tick per item that snaps into the middle.
+const picker = $('picker');
+for (let i = 0; i <= 30; i++) { const s = document.createElement('span'); s.textContent = i; picker.append(s); }
+let cur = -1;
+picker.addEventListener('scroll', () => {
+  const i = Math.round(picker.scrollLeft / 52);
+  if (i !== cur) { cur = i; buzz(6); [...picker.children].forEach((s, j) => s.classList.toggle('on', j === i)); }
+}, { passive: true });
+
+// Force Touch: the "click" is two pulses, on press and on release.
+const fc = $('fakeclick');
+fc.addEventListener('pointerdown', () => buzz(14));
+fc.addEventListener('pointerup', () => buzz(7));
+
+// Ball Count: N balls hit the walls at random moments.
+let balls = 0;
+$('shake').addEventListener('click', () => {
+  balls = 1 + Math.floor(Math.random() * 4);
+  const hits = Array.from({ length: balls }, () => rnd(0, 1100)).sort((a, b) => a - b);
+  const p = []; let t = 0;
+  for (const h of hits) { const at = Math.max(p.length ? t + 110 : 0, h); // gap keeps two balls from merging into one pulse
+    p.push(Math.round(at - t), 22); t = at + 22; }
+  p.unshift(0); // pattern must start with "on": a 0 ms pulse, then the first wait
+  buzz(p); $('ballres').textContent = 'Ile kulek? Wybierz:';
+});
+for (let n = 1; n <= 4; n++) {
+  const b = document.createElement('button'); b.textContent = n;
+  b.onclick = () => {
+    if (!balls) return;
+    const ok = n === balls;
+    $('ballres').textContent = ok ? `✅ Tak, ${balls}!` : `❌ Było ${balls}.`;
+    buzz(ok ? [15, 60, 25] : [30, 40, 30, 40, 30]); balls = 0;
+  };
+  $('guess').append(b);
+}
+
+// Progress bar and slide counter.
+const deck = $('deck'), slides = [...document.querySelectorAll('.s')];
+const upd = () => {
+  const i = Math.min(slides.length - 1, Math.round(deck.scrollTop / innerHeight));
+  $('num').textContent = `${i + 1}/${slides.length}`;
+  $('bar').style.width = ((i + 1) / slides.length * 100) + '%';
+};
+deck.addEventListener('scroll', upd, { passive: true }); upd();
+</script>
+</body>
+</html>
