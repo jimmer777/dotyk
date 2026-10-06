@@ -52,6 +52,7 @@
   Telefon nie może być na „Wycisz” — Chrome wtedy w ogóle nie wibruje.</small></div></div>
 <label class="ios-tap" id="iosTap"><input type="checkbox" switch></label>
 
+<script src="vibcheck.js"></script>
 <script>
 // One motor shakes the whole phone and navigator.vibrate can only switch it on/off for N ms,
 // so materials differ by time signature: where pulses fire (texture from the description),
@@ -280,6 +281,7 @@ const sndLabel = () => { $('snd').textContent = soundOn ? '🔊' : '🔇'; };
 $('snd').onclick = () => { soundOn = !soundOn; sndLabel(); try { localStorage.setItem('dotyk.sound', soundOn ? 'on' : 'off'); } catch {} };
 sndLabel();
 addEventListener('resize', layout);
+document.addEventListener('vibcheck:done', () => $('start')?.click()); // the answer tap also unlocks audio
 if ('serviceWorker' in navigator && isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
 select(0);
 updateCount();

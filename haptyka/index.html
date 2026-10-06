@@ -75,7 +75,7 @@
   <div class="top"><span>Przegląd · październik 2026 · ~4 min</span></div>
   <h1>Haptyka: co dziś da się poczuć pod palcem</h1>
   <p class="lead">Najlepsze przykłady na świecie, źródła i oceny. Przewijaj w górę, przyciski wibrują.</p>
-  <div class="why"><b>Warunek:</b> telefon nie może być na <b>Wycisz</b> — Chrome na Androidzie wtedy w ogóle nie wibruje.</div>
+  <div class="why"><b>Warunek:</b> wibracje włączone, telefon nie na <b>Wycisz</b>. <button onclick="vibCheck()" style="padding:6px 10px;margin-left:4px">📳 Sprawdź</button></div>
   <div class="heart">
     <div id="hrt" class="hrt">❤️</div>
     <div><span id="bpm" class="bpm">70</span> <span class="muted">uderzeń/min</span></div>
@@ -274,6 +274,7 @@
 </section>
 
 </main>
+<script src="../vibcheck.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 let demoUntil = 0; // the heart stays quiet while a demo pattern is playing

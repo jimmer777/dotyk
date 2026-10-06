@@ -1,6 +1,6 @@
 // Network first so a fresh deploy shows up on reload; the cache only serves offline launches.
-const CACHE = 'dotyk-v1';
-const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'dotyk-v2';
+const FILES = ['./', 'index.html', 'vibcheck.js', 'haptyka/', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
