@@ -12,7 +12,7 @@
   html, body { margin:0; background:var(--bg); color:var(--fg);
     font:17px/1.42 system-ui, -apple-system, "Segoe UI", sans-serif; }
   main { height:100dvh; overflow-y:auto; scroll-snap-type:y proximity; overscroll-behavior:none; }
-  .s { min-height:100dvh; scroll-snap-align:start; padding:calc(28px + env(safe-area-inset-top)) 18px 28px;
+  .s { min-height:100dvh; scroll-snap-align:start; padding:calc(54px + env(safe-area-inset-top)) 18px 28px;
     display:flex; flex-direction:column; justify-content:center; gap:12px; border-bottom:1px solid var(--line); }
   h1 { font-size:34px; line-height:1.1; margin:0; letter-spacing:-.5px; }
   h2 { font-size:25px; line-height:1.15; margin:0; letter-spacing:-.3px; }
@@ -35,7 +35,7 @@
   .src a { color:inherit; }
   .muted { color:var(--mut); font-size:14px; }
   #bar { position:fixed; top:0; left:0; height:3px; background:var(--acc); width:0; z-index:3; transition:width .2s; }
-  #num { position:fixed; right:12px; top:calc(8px + env(safe-area-inset-top)); font-size:12px; color:var(--mut); z-index:3; }
+  #num { position:fixed; left:14px; top:calc(8px + env(safe-area-inset-top)); font-size:12px; color:var(--mut); z-index:3; }
   .picker { display:flex; gap:0; overflow-x:auto; scroll-snap-type:x mandatory; background:var(--card); border-radius:12px;
     padding:14px calc(50% - 26px); scrollbar-width:none; }
   .picker::-webkit-scrollbar { display:none; }
@@ -48,16 +48,26 @@
   .srcs a { color:var(--ok); }
   .heart { display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--card); border-radius:16px; padding:14px; }
   .heart .demo { justify-content:center; }
-  .heart .big { width:100%; padding:18px; }
-  .hrt { font-size:60px; line-height:1; transition:transform .08s ease-out; }
+  .heart .big { width:100%; padding:16px; }
+  .hrt { font-size:52px; line-height:1; transition:transform .08s ease-out; }
   .hrt.beat { transform:scale(1.25); }
   .bpm { font-size:40px; font-weight:800; font-variant-numeric:tabular-nums; }
   button.pri { background:var(--acc); color:#111; font-weight:700; }
+  #topbar { position:fixed; right:10px; top:calc(8px + env(safe-area-inset-top)); display:flex; gap:6px; z-index:4; }
+  #topbar button { display:flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:13px;
+    background:rgba(40,40,48,.88); font-variant-numeric:tabular-nums; }
+  #topbar svg { width:20px; height:20px; display:block; transition:transform .08s ease-out; }
+  #hearttop.beat svg { transform:scale(1.3); }
+  #micb.on { color:var(--acc); } #micb.loud { color:#ff8a7a; }
   .ios-tap { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
 </style>
 </head>
 <body>
 <div id="bar"></div><div id="num"></div>
+<div id="topbar">
+  <button id="micb" aria-label="Słuchaj otoczenia: gdy głośno, serce bije 74 na minutę">🎤<span id="mict"></span></button>
+  <button id="hearttop" aria-label="Serce: włącz albo wycisz"><span id="hicon"></span><span id="livebpm"></span></button>
+</div>
 <label class="ios-tap" id="iosTap"><input type="checkbox" switch></label>
 <main id="deck">
 
@@ -71,7 +81,7 @@
     <div><span id="bpm" class="bpm">70</span> <span class="muted">uderzeń/min</span></div>
     <div class="demo"><button id="hbtn" class="pri">▶ Włącz serce</button><button id="hminus">−5</button><button id="hplus">+5</button></div>
     <button class="big" id="tap">👆 Wystukaj swoje tempo: stuknij 3×</button>
-    <p class="res" id="taps">Trzymaj telefon w dłoni — bije jak serce.</p>
+    <p class="res" id="taps">Na dalszych slajdach zwalnia do ~39/min. 🎤 u góry: gdy głośno → 74.</p>
   </div>
 </section>
 
@@ -266,7 +276,11 @@
 </main>
 <script>
 const $ = id => document.getElementById(id);
-const buzz = p => { if (navigator.vibrate) navigator.vibrate(p); else $('iosTap').click(); };
+let demoUntil = 0; // the heart stays quiet while a demo pattern is playing
+const buzz = (p, heart) => {
+  if (!heart) demoUntil = performance.now() + [].concat(p).reduce((a, b) => a + b, 0) + 50;
+  if (navigator.vibrate) navigator.vibrate(p); else $('iosTap').click();
+};
 const rnd = (a, b) => a + Math.random() * (b - a);
 
 // Simple demos: data-p="on,off,on,..."
@@ -317,20 +331,42 @@ for (let n = 1; n <= 4; n++) {
   $('guess').append(b);
 }
 
-// Heart: lub-dub at a set tempo; three taps set your own. Screen stays awake while it beats.
-let bpm = 70, beating = false, beatTimer = 0, nextBeat = 0, wake = null, taps = [];
+// Heart, switched on from slide 1 or the top-right icon. Slide 1 beats at your tempo; every other slide
+// drifts down to a calm 30–45/min, or 74/min while the microphone hears a loud place.
+const HEART = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
+const heartSvg = on => on
+  ? `<svg viewBox="0 0 24 24"><path d="${HEART}" fill="#ff4d6d"/></svg>`
+  : `<svg viewBox="0 0 24 24" fill="none" stroke="#a3a3a8" stroke-width="2"><path d="${HEART}"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`;
+let bpm = 70, live = 70, calm = 39, onCover = true, loud = false;
+let beating = false, wantBeat = false, beatTimer = 0, nextBeat = 0, wake = null, taps = [];
+
 const setBpm = v => { bpm = Math.max(30, Math.min(220, Math.round(v))); $('bpm').textContent = bpm; };
+function target() {
+  if (onCover) return bpm;
+  if (loud) return 74;
+  calm = Math.max(30, Math.min(45, calm + (Math.random() - 0.5) * 3 + (39 - calm) * 0.1));
+  return calm;
+}
+function heartUI() {
+  $('hbtn').textContent = beating ? '⏸ Zatrzymaj' : '▶ Włącz serce';
+  $('hicon').innerHTML = heartSvg(beating);
+  $('livebpm').textContent = beating ? Math.round(live) : '';
+}
 function beat() {
   if (!beating) return;
-  const period = 60000 / bpm;
-  buzz([45, Math.round(Math.min(110, period * 0.22)), 30]); // lub ... dub, closer together when fast
-  $('hrt').classList.add('beat'); setTimeout(() => $('hrt').classList.remove('beat'), 120);
+  const t = target();
+  live = onCover ? t : live + (t - live) * (t > live ? 0.3 : 0.12); // falls slowly, rises faster
+  const period = 60000 / live;
+  if (performance.now() >= demoUntil) buzz([45, Math.round(Math.min(110, period * 0.22)), 30], true); // lub ... dub
+  for (const el of [$('hrt'), $('hearttop')]) { el.classList.add('beat'); setTimeout(() => el.classList.remove('beat'), 120); }
+  heartUI();
   nextBeat += period;
   beatTimer = setTimeout(beat, Math.max(0, nextBeat - performance.now()));
 }
-async function setBeating(on) {
+async function run(on) {
+  if (on === beating) return heartUI();
   beating = on; clearTimeout(beatTimer);
-  $('hbtn').textContent = on ? '⏸ Zatrzymaj' : '▶ Włącz serce';
+  heartUI();
   if (on) {
     nextBeat = performance.now(); beat();
     try { wake = await navigator.wakeLock?.request('screen'); } catch {}
@@ -340,25 +376,52 @@ async function setBeating(on) {
     wake = null;
   }
 }
+const setBeating = on => { wantBeat = on; run(on && !document.hidden); };
 $('hbtn').onclick = () => setBeating(!beating);
+$('hearttop').onclick = () => setBeating(!beating);
 $('hminus').onclick = () => setBpm(bpm - 5); // takes effect from the next beat
 $('hplus').onclick = () => setBpm(bpm + 5);
 $('tap').addEventListener('pointerdown', () => {
   const now = performance.now();
   if (taps.length && now - taps.at(-1) > 2000) taps = [];
-  if (!taps.length && beating) setBeating(false); // silence the old rhythm while you tap a new one
+  if (!taps.length && beating) run(false); // silence the old rhythm while you tap a new one
   taps.push(now); taps = taps.slice(-4);
   buzz(12);
   if (taps.length < 3) { $('taps').textContent = '●'.repeat(taps.length) + '○'.repeat(3 - taps.length) + '  stukaj dalej…'; return; }
   const gaps = taps.slice(1).map((t, i) => t - taps[i]);
   setBpm(60000 / (gaps.reduce((a, b) => a + b) / gaps.length));
   $('taps').textContent = `Twoje tempo: ${bpm}/min. Stukaj dalej, żeby poprawić.`;
-  if (!beating) setBeating(true);
+  setBeating(true);
 });
-// Stop when the slide scrolls away or the app goes to background.
-new IntersectionObserver(([e]) => { if (!e.isIntersecting && beating) setBeating(false); }, { threshold: 0.4 })
-  .observe(document.querySelector('.s'));
-document.addEventListener('visibilitychange', () => { if (document.hidden && beating) setBeating(false); });
+new IntersectionObserver(([e]) => { onCover = e.isIntersecting; }, { threshold: 0.5 }).observe(document.querySelector('.s'));
+document.addEventListener('visibilitychange', () => run(wantBeat && !document.hidden));
+
+// Microphone: smoothed loudness in dBFS with hysteresis, so one shout does not flip the tempo.
+let mic = null, db = -90;
+function micUI() {
+  $('micb').classList.toggle('on', !!mic);
+  $('micb').classList.toggle('loud', !!mic && loud);
+  $('mict').textContent = mic ? `${Math.round(db)} dB${loud ? ' · głośno' : ''}` : '';
+}
+$('micb').onclick = async () => {
+  if (mic) { mic.stream.getTracks().forEach(t => t.stop()); mic.ctx.close(); mic = null; loud = false; return micUI(); }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    const ctx = new (window.AudioContext || window.webkitAudioContext)(), an = ctx.createAnalyser();
+    an.fftSize = 2048; ctx.createMediaStreamSource(stream).connect(an);
+    const buf = new Float32Array(an.fftSize);
+    mic = { stream, ctx };
+    (function listen() {
+      if (!mic) return;
+      an.getFloatTimeDomainData(buf);
+      let sum = 0; for (const v of buf) sum += v * v;
+      db = db * 0.9 + 10 * Math.log10(sum / buf.length + 1e-12) * 0.1;
+      if (!loud && db > -38) loud = true; else if (loud && db < -44) loud = false;
+      micUI(); setTimeout(listen, 100);
+    })();
+  } catch { $('mict').textContent = ' brak dostępu'; }
+};
+heartUI();
 
 // Progress bar and slide counter.
 const deck = $('deck'), slides = [...document.querySelectorAll('.s')];
