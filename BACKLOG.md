@@ -23,7 +23,7 @@ Live: https://jimmer777.github.io/dotyk/ · Lokalnie: `python3 -m http.server 84
 - [x] Pudełko z kulkami na żyroskopie (devicemotion), test wibracji na starcie (`vibcheck.js`)
 - [x] Zwarty układ dla niskich ekranów (≤760 px i ≤640 px wysokości) — sprawdzone 360×620/680, 375×812
 - [ ] Kalibracja progu „głośno” mikrofonu na prawdziwym Samsungu (czeka na liczby od Przema)
-- [x] Kulki policzalne: 1 stuk na kulkę na przechył, kolejka co 140 ms, filtr drżenia, potrząsanie wzmocnione (test Monte Carlo: wolne przechyły 100%, skos 95–100%, drżenie 0). Przemo: „zostaw kulki”, niedoskonałość OK.
+- [x] Kulki: zwykła fizyka w skali ~1:1 (pudełko 6,5 cm, opór toczenia 0,25 m/s², odbicia 0,45/0,8), każde odczuwalne uderzenie wibruje od razu. Przemo: „mają się zachowywać normalnie, zgadywanie to inna sprawa”. Testy: drżenie 0 impulsów, dotoczenie 10° zgodne z fizyką (+14% = opóźnienie filtra), leżąca kulka cicha, gwałtowne potrząsanie bez ucieczek/NaN.
 - [ ] Nawigacja między grą a prezentacją (link w grze)
 
 ## Feedback z telefonu (Samsung)
