@@ -23,8 +23,9 @@ Live: https://jimmer777.github.io/dotyk/ · Lokalnie: `python3 -m http.server 84
 - [x] Pudełko z kulkami na żyroskopie (devicemotion), test wibracji na starcie (`vibcheck.js`)
 - [x] Zwarty układ dla niskich ekranów (≤760 px i ≤640 px wysokości) — sprawdzone 360×620/680, 375×812
 - [ ] Kalibracja progu „głośno” mikrofonu na prawdziwym Samsungu (czeka na liczby od Przema)
-- [ ] Czułość kulek (K) po teście na prawdziwym żyroskopie
+- [x] Kulki policzalne: 1 stuk na kulkę na przechył, kolejka co 140 ms, filtr drżenia, potrząsanie wzmocnione (test Monte Carlo: wolne przechyły 100%, skos 95–100%, drżenie 0). Przemo: „zostaw kulki”, niedoskonałość OK.
 - [ ] Nawigacja między grą a prezentacją (link w grze)
 
 ## Feedback z telefonu (Samsung)
+- 2026-10-06: tester z pokolenia Alfa sam z siebie stukał **paznokciami** w ekran (tik-tik-tik) na drewnie/szkle. Pomysł: osobny „stuk paznokciem” — krótki, ostry klik + dźwięk zależny od materiału; szybkie serie stuknięć nie mogą się ucinać (szkło ma teraz długie echo ~140 ms). Sprawdzić, czy paznokieć w ogóle rejestruje się jako dotyk (pojemnościowy ekran) i czy da się go odróżnić po rozmiarze styku (PointerEvent width/height).
 - 2026-10-06: haptyka działa po zdjęciu Wycisz. Wersja 1: „każdy materiał taki sam” → v2 rytmy. Czeka na ocenę v2.
