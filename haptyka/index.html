@@ -46,6 +46,13 @@
   td { padding:6px 4px; border-bottom:1px solid var(--line); vertical-align:top; }
   .srcs li { font-size:13px; margin:6px 0; word-break:break-word; }
   .srcs a { color:var(--ok); }
+  .heart { display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--card); border-radius:16px; padding:14px; }
+  .heart .demo { justify-content:center; }
+  .heart .big { width:100%; padding:18px; }
+  .hrt { font-size:60px; line-height:1; transition:transform .08s ease-out; }
+  .hrt.beat { transform:scale(1.25); }
+  .bpm { font-size:40px; font-weight:800; font-variant-numeric:tabular-nums; }
+  button.pri { background:var(--acc); color:#111; font-weight:700; }
   .ios-tap { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
 </style>
 </head>
@@ -57,9 +64,15 @@
 <section class="s">
   <div class="top"><span>Przegląd · październik 2026 · ~4 min</span></div>
   <h1>Haptyka: co dziś da się poczuć pod palcem</h1>
-  <p class="lead">Najlepsze przykłady na świecie, gdzie je znaleźć i jak je ocenić. Przewijaj w górę. Przyciski <b>„Poczuj”</b> wibrują.</p>
+  <p class="lead">Najlepsze przykłady na świecie, źródła i oceny. Przewijaj w górę, przyciski wibrują.</p>
   <div class="why"><b>Warunek:</b> telefon nie może być na <b>Wycisz</b> — Chrome na Androidzie wtedy w ogóle nie wibruje.</div>
-  <div class="demo"><button class="big" data-p="40,120,60">💓 Poczuj: bicie serca</button></div>
+  <div class="heart">
+    <div id="hrt" class="hrt">❤️</div>
+    <div><span id="bpm" class="bpm">70</span> <span class="muted">uderzeń/min</span></div>
+    <div class="demo"><button id="hbtn" class="pri">▶ Włącz serce</button><button id="hminus">−5</button><button id="hplus">+5</button></div>
+    <button class="big" id="tap">👆 Wystukaj swoje tempo: stuknij 3×</button>
+    <p class="res" id="taps">Trzymaj telefon w dłoni — bije jak serce.</p>
+  </div>
 </section>
 
 <section class="s">
@@ -303,6 +316,49 @@ for (let n = 1; n <= 4; n++) {
   };
   $('guess').append(b);
 }
+
+// Heart: lub-dub at a set tempo; three taps set your own. Screen stays awake while it beats.
+let bpm = 70, beating = false, beatTimer = 0, nextBeat = 0, wake = null, taps = [];
+const setBpm = v => { bpm = Math.max(30, Math.min(220, Math.round(v))); $('bpm').textContent = bpm; };
+function beat() {
+  if (!beating) return;
+  const period = 60000 / bpm;
+  buzz([45, Math.round(Math.min(110, period * 0.22)), 30]); // lub ... dub, closer together when fast
+  $('hrt').classList.add('beat'); setTimeout(() => $('hrt').classList.remove('beat'), 120);
+  nextBeat += period;
+  beatTimer = setTimeout(beat, Math.max(0, nextBeat - performance.now()));
+}
+async function setBeating(on) {
+  beating = on; clearTimeout(beatTimer);
+  $('hbtn').textContent = on ? '⏸ Zatrzymaj' : '▶ Włącz serce';
+  if (on) {
+    nextBeat = performance.now(); beat();
+    try { wake = await navigator.wakeLock?.request('screen'); } catch {}
+  } else {
+    if (navigator.vibrate) navigator.vibrate(0);
+    try { await wake?.release(); } catch {}
+    wake = null;
+  }
+}
+$('hbtn').onclick = () => setBeating(!beating);
+$('hminus').onclick = () => setBpm(bpm - 5); // takes effect from the next beat
+$('hplus').onclick = () => setBpm(bpm + 5);
+$('tap').addEventListener('pointerdown', () => {
+  const now = performance.now();
+  if (taps.length && now - taps.at(-1) > 2000) taps = [];
+  if (!taps.length && beating) setBeating(false); // silence the old rhythm while you tap a new one
+  taps.push(now); taps = taps.slice(-4);
+  buzz(12);
+  if (taps.length < 3) { $('taps').textContent = '●'.repeat(taps.length) + '○'.repeat(3 - taps.length) + '  stukaj dalej…'; return; }
+  const gaps = taps.slice(1).map((t, i) => t - taps[i]);
+  setBpm(60000 / (gaps.reduce((a, b) => a + b) / gaps.length));
+  $('taps').textContent = `Twoje tempo: ${bpm}/min. Stukaj dalej, żeby poprawić.`;
+  if (!beating) setBeating(true);
+});
+// Stop when the slide scrolls away or the app goes to background.
+new IntersectionObserver(([e]) => { if (!e.isIntersecting && beating) setBeating(false); }, { threshold: 0.4 })
+  .observe(document.querySelector('.s'));
+document.addEventListener('visibilitychange', () => { if (document.hidden && beating) setBeating(false); });
 
 // Progress bar and slide counter.
 const deck = $('deck'), slides = [...document.querySelectorAll('.s')];
