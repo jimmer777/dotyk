@@ -59,6 +59,7 @@
   #topbar svg { width:20px; height:20px; display:block; transition:transform .08s ease-out; }
   #hearttop.beat svg { transform:scale(1.3); }
   #micb.on { color:var(--acc); } #micb.loud { color:#ff8a7a; }
+  .box { width:100%; height:150px; border-radius:14px; display:block; touch-action:none; }
   .ios-tap { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
 </style>
 </head>
@@ -156,8 +157,9 @@
 <section class="s">
   <div class="top"><span class="chip nov">NOWATORSKIE w 2017 · dziś klasyk</span><span>Nintendo · Switch · HD Rumble</span></div>
   <h2>Ile kulek jest w pudełku?</h2>
-  <p class="lead">Minigra „Ball Count” z 1-2-Switch: przechylasz Joy-Cona i liczysz kulki, które czujesz w środku. Spróbuj tutaj (nasz telefon jest dużo prostszy):</p>
-  <div class="demo"><button class="big" id="shake">📦 Potrząśnij pudełkiem</button></div>
+  <p class="lead">Minigra „Ball Count” z 1-2-Switch: przechylasz Joy-Cona i liczysz kulki w środku. Tu też: weź pudełko, trzymaj telefon płasko i delikatnie nim ruszaj — prawo, lewo, przód, tył.</p>
+  <canvas id="box" class="box" aria-label="Zamknięte pudełko z kulkami"></canvas>
+  <div class="demo"><button class="pri" id="boxbtn">📦 Weź pudełko</button></div>
   <div class="demo" id="guess"></div>
   <p class="res" id="ballres"></p>
   <div class="why"><b>Dlaczego ważne:</b> pokazuje, że z samej wibracji da się <i>policzyć obiekty</i>. To gra oparta wyłącznie na dotyku.</div>
@@ -310,27 +312,121 @@ const fc = $('fakeclick');
 fc.addEventListener('pointerdown', () => buzz(14));
 fc.addEventListener('pointerup', () => buzz(7));
 
-// Ball Count: N balls hit the walls at random moments.
-let balls = 0;
-$('shake').addEventListener('click', () => {
-  balls = 1 + Math.floor(Math.random() * 4);
-  const hits = Array.from({ length: balls }, () => rnd(0, 1100)).sort((a, b) => a - b);
-  const p = []; let t = 0;
-  for (const h of hits) { const at = Math.max(p.length ? t + 110 : 0, h); // gap keeps two balls from merging into one pulse
-    p.push(Math.round(at - t), 22); t = at + 22; }
-  p.unshift(0); // pattern must start with "on": a 0 ms pulse, then the first wait
-  buzz(p); $('ballres').textContent = 'Ile kulek? Wybierz:';
-});
+// Ball Count: N balls roll in a closed box driven by the motion sensor (tilt + shake). Wall hits buzz,
+// harder hits buzz longer, so you count them by feel. No sensor (desktop)? Drag the box with a finger.
+const box = $('box'), bx = box.getContext('2d');
+const R = 11, K = 1500; // ball radius in px; px/s² per m/s² (about a third of real scale, easier to control)
+const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent); // iOS reports motion with the opposite sign
+let balls = [], boxOn = false, opened = false, raf = 0, lastT = 0, acc = { x: 0, y: 0 }, gotMotion = false, simT = 0, lastHit = -1e9, drag = null;
+const vib = ms => { if (navigator.vibrate) navigator.vibrate(ms); else $('iosTap').click(); };
+
+function sizeBox() {
+  const dpr = devicePixelRatio || 1;
+  box.width = box.clientWidth * dpr; box.height = box.clientHeight * dpr; bx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+function newBalls() {
+  const W = box.clientWidth, H = box.clientHeight, n = 1 + Math.floor(Math.random() * 4);
+  balls = [];
+  while (balls.length < n) {
+    const b = { x: rnd(R, W - R), y: rnd(R, H - R), vx: 0, vy: 0 };
+    if (balls.every(o => Math.hypot(o.x - b.x, o.y - b.y) > 2 * R + 2)) balls.push(b);
+  }
+}
+function onMotion(e) {
+  const g = e.accelerationIncludingGravity;
+  if (!g || g.x == null) return;
+  gotMotion = true;
+  const s = iOS ? -1 : 1; // balls feel minus the measured specific force; screen y points down
+  acc.x = -g.x * s * K; acc.y = g.y * s * K;
+}
+function step(dt) {
+  const W = box.clientWidth, H = box.clientHeight;
+  let hit = 0;
+  if (!gotMotion && !drag) { acc.x *= 0.8; acc.y *= 0.8; }
+  // A ball resting on a wall under tilt gains a*dt every frame; only clearly faster impacts count as hits,
+  // slower ones just stop the ball so it does not buzz while it lies there.
+  const thrX = 40 + 3 * Math.abs(acc.x) * dt, thrY = 40 + 3 * Math.abs(acc.y) * dt;
+  const wall = (v, thr) => { if (v > thr) { hit = Math.max(hit, v); return -0.45; } return 0; };
+  for (const b of balls) {
+    b.vx += acc.x * dt; b.vy += acc.y * dt;
+    const f = Math.max(0, 1 - 1.2 * dt); b.vx *= f; b.vy *= f; // rolling friction
+    b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.x < R)     { b.x = R;     b.vx *= wall(-b.vx, thrX); }
+    if (b.x > W - R) { b.x = W - R; b.vx *= wall( b.vx, thrX); }
+    if (b.y < R)     { b.y = R;     b.vy *= wall(-b.vy, thrY); }
+    if (b.y > H - R) { b.y = H - R; b.vy *= wall( b.vy, thrY); }
+  }
+  for (let i = 0; i < balls.length; i++) for (let j = i + 1; j < balls.length; j++) {
+    const a = balls[i], b = balls[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+    if (!d || d >= 2 * R) continue;
+    const nx = dx / d, ny = dy / d, rel = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny, push = (2 * R - d) / 2;
+    a.x -= nx * push; a.y -= ny * push; b.x += nx * push; b.y += ny * push;
+    if (rel > 0) { const k = rel * 0.8; a.vx -= k * nx; a.vy -= k * ny; b.vx += k * nx; b.vy += k * ny; if (rel > Math.max(thrX, thrY) * 2) hit = Math.max(hit, rel * 0.5); }
+  }
+  simT += dt * 1000; // rate-limit on simulation time so pulses stay apart even when frames stutter
+  if (hit && simT - lastHit > 28) { vib(Math.round(Math.min(35, 5 + hit / 60))); lastHit = simT; }
+}
+function drawBox() {
+  const W = box.clientWidth, H = box.clientHeight, c = bx;
+  c.fillStyle = '#3a2a1a'; c.fillRect(0, 0, W, H);
+  if (opened) {
+    c.fillStyle = '#dcdce4';
+    for (const b of balls) { c.beginPath(); c.arc(b.x, b.y, R, 0, 7); c.fill(); }
+    return;
+  }
+  c.fillStyle = '#5a4128'; for (let y = 2; y < H; y += 30) c.fillRect(0, y, W, 26); // closed lid planks
+  c.fillStyle = 'rgba(255,255,255,.6)'; c.font = '600 40px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText(boxOn ? '?' : '📦', W / 2, H / 2);
+}
+function boxLoop(t) {
+  const dt = Math.min(0.033, (t - (lastT || t)) / 1000); lastT = t;
+  step(dt); drawBox();
+  raf = requestAnimationFrame(boxLoop);
+}
+async function boxStart() {
+  try { if (typeof DeviceMotionEvent?.requestPermission === 'function') await DeviceMotionEvent.requestPermission(); } catch {}
+  sizeBox(); newBalls();
+  opened = false; boxOn = true; gotMotion = false; acc = { x: 0, y: 0 };
+  addEventListener('devicemotion', onMotion);
+  demoUntil = Infinity; // keep the heart quiet while you count
+  $('boxbtn').textContent = '✋ Odłóż pudełko';
+  $('ballres').textContent = 'Ruszaj telefonem i licz uderzenia. Ile kulek?';
+  lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(boxLoop);
+  setTimeout(() => { if (boxOn && !gotMotion) $('ballres').textContent = 'Brak czujnika ruchu — potrząsaj, przeciągając palcem po pudełku.'; }, 1500);
+}
+function boxStop() {
+  boxOn = false; cancelAnimationFrame(raf); removeEventListener('devicemotion', onMotion);
+  demoUntil = 0;
+  $('boxbtn').textContent = '📦 Weź pudełko';
+  drawBox();
+}
+$('boxbtn').onclick = () => (boxOn && !opened ? boxStop() : boxStart());
 for (let n = 1; n <= 4; n++) {
   const b = document.createElement('button'); b.textContent = n;
   b.onclick = () => {
-    if (!balls) return;
-    const ok = n === balls;
-    $('ballres').textContent = ok ? `✅ Tak, ${balls}!` : `❌ Było ${balls}.`;
-    buzz(ok ? [15, 60, 25] : [30, 40, 30, 40, 30]); balls = 0;
+    if (!boxOn || opened) return;
+    const ok = n === balls.length;
+    opened = true; // lift the lid: the balls keep rolling so you can see what you felt
+    $('ballres').textContent = ok ? `✅ Tak, ${balls.length}!` : `❌ Było ${balls.length}.`;
+    vib(ok ? [15, 60, 25] : [30, 40, 30, 40, 30]);
+    $('boxbtn').textContent = '📦 Nowe pudełko';
   };
   $('guess').append(b);
 }
+// Finger fallback: moving the box one way throws the balls the other way.
+box.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, t: e.timeStamp, vx: 0, vy: 0 }; });
+box.addEventListener('pointermove', e => {
+  if (!drag || !boxOn || gotMotion) return;
+  const dt = Math.max(8, e.timeStamp - drag.t) / 1000, vx = (e.clientX - drag.x) / dt, vy = (e.clientY - drag.y) / dt;
+  const cap = v => Math.max(-40000, Math.min(40000, v)); // the first move after touch-down would spike
+  acc.x = cap(-(vx - drag.vx) / dt * 0.6); acc.y = cap(-(vy - drag.vy) / dt * 0.6);
+  Object.assign(drag, { x: e.clientX, y: e.clientY, t: e.timeStamp, vx, vy });
+});
+const undrag = () => { drag = null; };
+box.addEventListener('pointerup', undrag); box.addEventListener('pointercancel', undrag);
+new IntersectionObserver(([e]) => { if (!e.isIntersecting && boxOn) boxStop(); }, { threshold: 0.3 }).observe(box.closest('.s'));
+document.addEventListener('visibilitychange', () => { if (document.hidden && boxOn) boxStop(); });
+sizeBox(); drawBox();
 
 // Heart, switched on from slide 1 or the top-right icon. Slide 1 beats at your tempo; every other slide
 // drifts down to a calm 30–45/min, or 74/min while the microphone hears a loud place.
