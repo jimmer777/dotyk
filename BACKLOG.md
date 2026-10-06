@@ -17,5 +17,14 @@ Live: https://jimmer777.github.io/dotyk/ · Lokalnie: `python3 -m http.server 84
 - [ ] Szybkość palca wpływa na długość dyskretnych impulsów (szybciej = mocniej)
 - [ ] Ładniejsze tekstury wizualne (faliste słoje, cienie bruku, odblask szkła)
 
+## Prezentacja `haptyka/` (https://jimmer777.github.io/dotyk/haptyka/)
+- [x] Część 1 (czym jest haptyka) + Część 2 (najlepsi na świecie), 22 slajdy, źródła
+- [x] Serce: własne tempo, spokojne 30–45/min na dalszych slajdach, 🎤 głośno → 74, wyciszenie ikoną
+- [x] Pudełko z kulkami na żyroskopie (devicemotion), test wibracji na starcie (`vibcheck.js`)
+- [x] Zwarty układ dla niskich ekranów (≤760 px i ≤640 px wysokości) — sprawdzone 360×620/680, 375×812
+- [ ] Kalibracja progu „głośno” mikrofonu na prawdziwym Samsungu (czeka na liczby od Przema)
+- [ ] Czułość kulek (K) po teście na prawdziwym żyroskopie
+- [ ] Nawigacja między grą a prezentacją (link w grze)
+
 ## Feedback z telefonu (Samsung)
 - 2026-10-06: haptyka działa po zdjęciu Wycisz. Wersja 1: „każdy materiał taki sam” → v2 rytmy. Czeka na ocenę v2.
